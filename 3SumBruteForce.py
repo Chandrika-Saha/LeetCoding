@@ -1,6 +1,7 @@
 class Solution:
     def threeSum(self, nums: List[int]) -> List[List[int]]:
         # Trying the brute-force approach, time-limit exceeded
+        # Use three for loops
         result_list = []
         for i in range(len(nums)):
             for j in range(i+1, len(nums)):
