@@ -1,4 +1,4 @@
-import multiprocessing
+import multiprocessing_q
 
 # Use shared memory to get around this limitation of not having
 # shared memory between processes
