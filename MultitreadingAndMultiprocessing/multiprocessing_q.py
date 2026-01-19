@@ -20,6 +20,7 @@ def cube(q, o):
     # If the queue not empty, doesn't mean it can't have items coming in.
     # The SENTINEL is the only thing that marks the end of the queue.
     while True:
+        # When we use get, we essentially remove the item from the queue
         n = q.get()
         if n is SENTINEL:
             break
