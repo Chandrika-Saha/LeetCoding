@@ -6,13 +6,13 @@ def calc_square(nums):
     print("Calculating square numbers")
     for n in nums:
         time.sleep(1)
-        print("Square:", n)
+        print("Square:", n**2)
 
 def calc_cube(nums):
     print("Calculate cube of numbers")
     for n in nums:
         time.sleep(1)
-        print("Cube:", n)
+        print("Cube:", n**3)
 
 arr = [2, 3, 4, 5]
 
