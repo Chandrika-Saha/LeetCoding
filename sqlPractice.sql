@@ -123,3 +123,5 @@ SELECT *
 FROM Parks_and_Recreation.employee_demographics
 ORDER BY age
 LIMIT 2, 3;
+
+SELECT length('Hello');
