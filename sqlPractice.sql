@@ -337,6 +337,96 @@ GROUP BY gender) AS agg_table
 GROUP BY gender;
 
 -- Window functions
-SELECT WINDOW
+SELECT gender, AVG(salary) as avg_salary
+FROM Parks_and_Recreation.employee_demographics AS dem
+JOIN Parks_and_Recreation.employee_salary AS sal
+	ON dem.employee_id = sal.employee_id
+GROUP BY gender
+;
 
+-- Basically this lets us keep the column values which we have to lose because of lack of aggregation with group by
+SELECT dem.first_name, dem.last_name, AVG(salary) OVER(PARTITION BY gender) AS avg_salary
+FROM employee_demographics as dem
+JOIN employee_salary as sal
+	ON dem.employee_id = sal.employee_id;
+    
+
+SELECT dem.first_name, dem.last_name, SUM(salary) OVER(PARTITION BY gender) AS sum_salary
+FROM employee_demographics as dem
+JOIN employee_salary as sal
+	ON dem.employee_id = sal.employee_id;
+    
+SELECT dem.first_name, 
+dem.last_name, 
+salary,
+SUM(salary) OVER(PARTITION BY gender ORDER BY dem.employee_id) AS rolling_tota
+FROM employee_demographics as dem
+JOIN employee_salary as sal
+	ON dem.employee_id = sal.employee_id;
+    
+-- Simply adding a serial number column
+SELECT dem.employee_id,
+dem.first_name, 
+dem.last_name, 
+salary,
+ROW_NUMBER() OVER()
+FROM employee_demographics as dem
+JOIN employee_salary as sal
+	ON dem.employee_id = sal.employee_id;
+
+-- This will add serial numbers based on the gender
+SELECT dem.employee_id,
+dem.first_name, 
+dem.last_name, 
+salary,
+ROW_NUMBER() OVER(PARTITION BY gender)
+FROM employee_demographics as dem
+JOIN employee_salary as sal
+	ON dem.employee_id = sal.employee_id;
+    
+-- Add serial number based on the gender and sort by the salary
+SELECT dem.employee_id,
+dem.first_name, 
+dem.last_name, 
+salary,
+ROW_NUMBER() OVER(PARTITION BY gender ORDER BY salary DESC)
+FROM employee_demographics as dem
+JOIN employee_salary as sal
+	ON dem.employee_id = sal.employee_id;
+    
+-- The rank will do something like the ROW_NUMBER but, rank duplicate the same id for the similar value of the order by columns
+-- the normal rank will, add the same id to all same values, but it will skip to the right number in the sequence for the next item   
+SELECT dem.employee_id,
+dem.first_name, 
+dem.last_name, 
+salary,
+ROW_NUMBER() OVER(PARTITION BY gender ORDER BY salary DESC) AS row_num,
+RANK() OVER(PARTITION BY gender ORDER BY salary DESC) AS rank_num
+FROM employee_demographics as dem
+JOIN employee_salary as sal
+	ON dem.employee_id = sal.employee_id;
+    
+-- DENSE_RANK simply breaks this "keeping the sequence" and assign the next number to the next value
+SELECT dem.employee_id,
+dem.first_name, 
+dem.last_name, 
+salary,
+ROW_NUMBER() OVER(PARTITION BY gender ORDER BY salary DESC) AS row_num,
+RANK() OVER(PARTITION BY gender ORDER BY salary DESC) AS rank_num,
+DENSE_RANK() OVER(PARTITION BY gender ORDER BY salary DESC) AS desne_rank_num
+FROM employee_demographics as dem
+JOIN employee_salary as sal
+	ON dem.employee_id = sal.employee_id;
+    
+-- CTEs (Common Table expressions)
+WITH CTE_example AS
+(
+SELECT gender, AVG(salary) AS avg_sal, MAX(salary) AS max_sal, MIN(salary) AS min_sal, COUNT(salary) AS count_sal
+FROM Parks_and_Recreation.employee_demographics as dem
+JOIN Parks_and_Recreation.employee_salary as sal
+	ON dem.employee_id = sal.employee_id
+GROUP BY gender
+)
+SELECT AVG(avg_sal)
+FROM CTE_example;
 
