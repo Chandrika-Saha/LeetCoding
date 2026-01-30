@@ -124,4 +124,219 @@ FROM Parks_and_Recreation.employee_demographics
 ORDER BY age
 LIMIT 2, 3;
 
-SELECT length('Hello');
+-- Aliasing
+SELECT gender, AVG(age)
+FROM Parks_and_Recreation.employee_demographics
+GROUP BY gender
+HAVING AVG(age) > 40;
+
+SELECT gender, AVG(age) as avg_age
+FROM Parks_and_Recreation.employee_demographics
+GROUP BY gender
+HAVING avg_age > 40;
+
+-- Joining
+SELECT * 
+FROM Parks_and_Recreation.employee_demographics;
+
+SELECT *
+FROM Parks_and_Recreation.employee_salary;
+
+SELECT * 
+FROM Parks_and_Recreation.employee_demographics
+INNER JOIN Parks_and_Recreation.employee_salary -- The default join operation is inner join, however, we can specify the join type if we want to
+	ON Parks_and_Recreation.employee_demographics.employee_id = Parks_and_Recreation.employee_salary.employee_id;
+    
+SELECT *
+FROM Parks_and_Recreation.employee_demographics as ed
+INNER JOIN Parks_and_Recreation.employee_salary as es
+		ON ed.employee_id = es.employee_id
+;
+
+SELECT ed.employee_id, age, dept_id
+FROM Parks_and_Recreation.employee_demographics as ed
+INNER JOIN Parks_and_Recreation.employee_salary as es
+		ON ed.employee_id = es.employee_id
+;
+
+SELECT *
+FROM Parks_and_Recreation.employee_demographics as ed
+LEFT JOIN Parks_and_Recreation.employee_salary as es
+	ON ed.employee_id = es.employee_id
+;
+
+SELECT *
+FROM Parks_and_Recreation.employee_demographics as ed
+RIGHT JOIN Parks_and_Recreation.employee_salary as es
+	ON ed.employee_id = es.employee_id
+;
+
+SELECT *
+FROM Parks_and_Recreation.employee_demographics as ed
+RIGHT JOIN Parks_and_Recreation.employee_salary as es
+	ON es.employee_id = ed.employee_id
+;
+
+-- SELF JOIN
+SELECT es1.employee_id as secret_santa_id,
+es1.first_name as secret_santa, 
+es2.employee_id as employee_id,
+es2.first_name as employee_name
+FROM Parks_and_Recreation.employee_salary as es1
+INNER JOIN Parks_and_Recreation.employee_salary as es2
+	ON es1.employee_id + 1 = es2.employee_id;
+;
+
+-- JOIN Multiple tables
+SELECT ed.employee_id, occupation, department_name
+FROM Parks_and_Recreation.employee_demographics as ed
+INNER JOIN Parks_and_Recreation.employee_salary as es
+	ON ed.employee_id = es.employee_id
+INNER JOIN Parks_and_Recreation.parks_departments as pd
+	ON es.dept_id = pd.department_id
+;
+
+-- Unions
+-- JOINs join the columns, Unions joins the rows together.
+-- For unions to make sense, the colum types of both tables should be similar.
+SELECT age, gender
+FROM Parks_and_Recreation.employee_demographics
+UNION
+SELECT first_name, last_name
+FROM Parks_and_Recreation.employee_salary;
+
+SELECT	first_name, last_name
+FROM Parks_and_Recreation.employee_demographics
+UNION DISTINCT
+SELECT first_name, last_name
+FROM Parks_and_Recreation.employee_salary;
+
+SELECT	first_name, last_name
+FROM Parks_and_Recreation.employee_demographics
+UNION ALL
+SELECT first_name, last_name
+FROM Parks_and_Recreation.employee_salary;
+
+SELECT first_name, last_name, 'old man' AS Label
+FROM Parks_and_Recreation.employee_demographics
+WHERE age > 40 AND gender = 'Male'
+UNION
+SELECT first_name, last_name, 'old lady' AS Label
+FROM Parks_and_Recreation.employee_demographics
+WHERE age > 40 AND gender = 'Female'
+UNION
+SELECT first_name, last_name, 'High paying peeps' AS Label
+FROM Parks_and_Recreation.employee_salary
+WHERE salary > 70000
+;
+
+-- String functions
+SELECT LENGTH('Skyfall');
+
+SELECT first_name, LENGTH(first_name) AS first_name_length
+FROM Parks_and_Recreation.employee_demographics
+ORDER BY 2 DESC
+;
+
+SELECT UPPER('sky'), LOWER('SkY');
+
+SELECT first_name, UPPER(first_name)
+FROM Parks_and_Recreation.employee_demographics;
+
+-- Left and right trims
+SELECT TRIM('           sky         '), 
+LTRIM('           sky                 '),
+RTRIM('           sky         ');
+
+-- Substrings
+-- Can be a bit confusing. Just remember the index starts with 1 here
+-- The second argument is the number of characters starting the first argument index
+
+SELECT first_name,
+LEFT(first_name, 4) AS first_four,
+RIGHT(first_name, 4) AS last_four,
+SUBSTRING(first_name, 2, 3) AS Middle_tree,
+birth_date,
+SUBSTRING(birth_date, 6, 2) AS Birth_month 
+FROM Parks_and_Recreation.employee_demographics;
+
+SELECT *
+FROM Parks_and_Recreation.employee_demographics;
+
+INSERT INTO Parks_and_Recreation.employee_demographics
+VALUES (14, 'aaala', 'Smith', 333, 'Male', '1999-09-30');
+
+
+SELECT first_name,
+REPLACE(first_name, 'a', 'zz') -- This one is case sensitive, and replace replaces all similar char sequence in the string
+FROM Parks_and_Recreation.employee_demographics;
+
+SELECT LOCATE('x', 'Alexander');
+
+SELECT first_name, LOCATE('An', first_name) -- For the locate, the first argument is the thing you want to locate, the second argument is the full string
+FROM Parks_and_Recreation.employee_demographics;
+
+SELECT CONCAT(first_name, ' ', last_name) AS name, first_name, last_name
+FROM Parks_and_Recreation.employee_demographics
+;
+
+-- CASE statements
+-- Kinda like if else statements
+SELECT first_name,
+last_name,
+age,
+CASE
+	WHEN age <= 30 THEN 'Young'
+    WHEN age BETWEEN 31 AND 50 THEN 'Old'
+    WHEN age >= 50 THEN 'On death\'s door'
+END AS Age_bracket
+FROM Parks_and_Recreation.employee_demographics
+;
+
+SELECT first_name, last_name, salary,
+CASE
+	WHEN salary < 50000 THEN salary * 1.05
+    WHEN salary > 50000 THEN salary * 1.07
+END AS New_salary,
+CASE
+	WHEN dept_id = 6 THEN salary * 1.10
+END AS Bonus
+FROM Parks_and_Recreation.employee_salary;
+
+-- Subquries
+SELECT * 
+FROM Parks_and_Recreation.employee_demographics
+WHERE employee_id IN (SELECT employee_id
+						FROM Parks_and_Recreation.employee_salary
+                        WHERE dept_id = 1)
+;
+
+-- This one is wrong, not the average of the groups
+SELECT first_name, salary, AVG(salary)
+FROM Parks_and_Recreation.employee_salary
+GROUP BY first_name, salary;
+
+SELECT first_name, salary,
+(SELECT AVG(salary) 
+FROM Parks_and_Recreation.employee_salary)
+FROM Parks_and_Recreation.employee_salary;
+
+SELECT gender, AVG(age), MAX(age), MIN(age), COUNT(age)
+FROM Parks_and_Recreation.employee_demographics
+GROUP BY gender;
+
+SELECT gender, AVG(avg_age), AVG(max_age)
+FROM 
+(SELECT gender, 
+AVG(age) AS avg_age,
+MAX(age) AS max_age, 
+MIN(age), 
+COUNT(age)
+FROM Parks_and_Recreation.employee_demographics
+GROUP BY gender) AS agg_table
+GROUP BY gender;
+
+-- Window functions
+SELECT WINDOW
+
+
