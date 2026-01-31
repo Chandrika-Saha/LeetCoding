@@ -430,3 +430,161 @@ GROUP BY gender
 SELECT AVG(avg_sal)
 FROM CTE_example;
 
+-- The CTE (Common Table expression) can only be used right after defining it, cannot be used outside this scope
+-- A more appropriate use case of Common Table Expression is when we have multiple conditions
+-- and we want to make the thing neat and clean. Common Table Expression will help to identify the 
+-- common parts of the overall calculations and write them cleanly
+WITH CTE_example AS
+(
+SELECT employee_id, gender, birth_date
+FROM Parks_and_Recreation.employee_demographics
+WHERE employee_demographics.birth_date > '1985-01-01'
+),
+CTE_example2 AS
+(
+SELECT employee_id, salary
+FROM Parks_and_Recreation.employee_salary
+WHERE salary > 50000
+)
+SELECT *
+FROM CTE_Example AS ct1
+JOIN CTE_Example2 AS ct2
+	ON ct1.employee_id = ct2.employee_id
+;
+
+-- We can specify the name of the columns in the Common table expression headers
+-- Whatever we put in the header will be forced as the column names
+WITH CTE_example (G, AvgS, MS, MinS, CS) AS
+(
+SELECT gender, AVG(salary) AS avg_sal, MAX(salary) AS max_sal, MIN(salary) AS min_sal, COUNT(salary) AS count_sal
+FROM Parks_and_Recreation.employee_demographics as dem
+JOIN Parks_and_Recreation.employee_salary as sal
+	ON dem.employee_id = sal.employee_id
+GROUP BY gender
+)
+SELECT *
+FROM CTE_example;
+
+-- Temporary Tables
+-- Store intermideate results for a complex query
+
+CREATE TEMPORARY TABLE temp_table
+(
+first_name VARCHAR(50),
+last_name VARCHAR(50),
+fav_movies VARCHAR(100)
+);
+
+INSERT INTO temp_table
+Values ("alu", "kopi", "The Matrix");
+
+
+SELECT * 
+FROM temp_table;
+
+CREATE TEMPORARY TABLE salary_over_50k
+SELECT * 
+FROM Parks_and_Recreation.employee_salary
+WHERE salary > 50000;
+
+SELECT * 
+FROM salary_over_50k;
+
+-- Stored procedure
+-- To store complex queries in the same place
+
+-- This is a very simple stored procedure
+-- Sometimes it's better to add the database you are using right now.
+USE Parks_and_Recreation;
+
+CREATE PROCEDURE large_salaries()
+SELECT *
+FROM Parks_and_Recreation.employee_salary
+WHERE salary > 50000;
+
+-- To call a stored procedure
+CALL large_salaries();
+
+-- This will end up not working as expected since the ; denotes the delimeter, we need to fix the delineter
+USE Parks_and_Recreation;
+DROP PROCEDURE IF EXISTS large_salaries_2;
+CREATE PROCEDURE large_salaries_2()
+SELECT *
+FROM employee_salary
+WHERE salary > 50000;
+SELECT *
+FROM employee_salary
+WHERE salary > 10000;
+
+CALL large_salaries_2();
+
+-- The fixed version
+USE Parks_and_Recreation;
+DROP PROCEDURE IF EXISTS large_salaries_2;
+DELIMITER $$
+CREATE PROCEDURE large_salaries_2()
+BEGIN
+	SELECT *
+	FROM employee_salary
+	WHERE salary > 50000;
+	SELECT *
+	FROM employee_salary
+	WHERE salary > 10000;
+END$$
+DELIMITER ;
+
+CALL large_salaries_2();
+
+-- Triggers and Events
+SELECT * 
+FROM Parks_and_Recreation.employee_demographics;
+
+SELECT *
+FROM Parks_and_Recreation.employee_salary;
+
+DELIMITER $$
+CREATE TRIGGER employee_insert
+	AFTER INSERT ON Parks_and_Recreation.employee_salary
+    FOR EACH ROW --  These few lines are just the setup for the trigger
+BEGIN 
+	INSERT INTO Parks_and_Recreation.employee_demographics (employee_id, first_name, last_name)
+    VALUES (NEW.employee_id, NEW.first_name, NEW.last_name);
+END $$
+DELIMITER ;
+
+INSERT INTO employee_salary (employee_id, first_name, last_name, occupation, salary, dept_id)
+VALUES (15, 'X', 'Y', 'lala', 100000, 3);
+
+SELECT *
+FROM employee_salary;
+
+SELECT *
+FROM employee_demographics;
+
+-- Events
+-- This is more of a scheduled workflow, trigger on the other hand, gets triggered when something happens
+DELIMITER $$
+CREATE EVENT delete_retirees
+ON SCHEDULE EVERY 30 SECOND
+DO
+BEGIN
+	DELETE
+    FROM employee_demographics
+    WHERE age >= 60;
+END $$
+DELIMITER ;
+
+SELECT * 
+FROM Parks_and_Recreation.employee_demographics;
+
+-- You can view the configuration variables here
+-- Sometimes the event scheduler can be turned off, you have to turn it on
+-- Sometimes the safe delete settings could also be turned off in the tables settings
+-- we simply need to turn it back up and try again
+SHOW VARIABLES;
+SHOW VARIABLES LIKE 'event%';
+
+-- Data cleaning
+
+
+
