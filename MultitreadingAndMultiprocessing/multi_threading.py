@@ -1,7 +1,6 @@
 import threading
 import time
 
-
 def calc_square(nums):
     print("Calculating square numbers")
     for n in nums:
