@@ -1,5 +1,4 @@
-import multiprocessing_q
-
+import multiprocessing
 # Use shared memory to get around this limitation of not having
 # shared memory between processes
 result = []
