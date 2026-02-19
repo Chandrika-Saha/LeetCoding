@@ -5,6 +5,7 @@ async def fetch_data(delay):
     await asyncio.sleep(delay)
     print("data fetched")
     return {"data": "sample data"}
+
 async def main():
     print("Start of the coroutine")
     f = fetch_data(1)

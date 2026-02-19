@@ -1,7 +1,5 @@
 # Functions that modifies another function
 import time
-
-
 def timer(func):
     def wrapper(*args, **kwargs):
         start_time = time.time()
